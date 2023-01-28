@@ -12,4 +12,4 @@ Simulator outputs all lottery wins.
 
 ---
 
-## Newa features are being developed.
+## New features are being developed.
