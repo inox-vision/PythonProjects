@@ -22,28 +22,16 @@ dest_dirs_list = []
 
 # Creating lists of files
 
-for dirpath, dirs,files in os.walk(source_dir):
-    for source_files in os.scandir(dirpath):
-        if source_files.is_file():
-            source_list.append(os.path.relpath(source_files.path, source_dir))
+def create_lists (directory,files_list, dirs_list):
+    for dirpath, dirs,files in os.walk(directory):
+        for source_files in os.scandir(dirpath):
+            if source_files.is_file():
+                files_list.append(os.path.relpath(source_files.path, directory))
+            if source_files.is_dir():
+                dirs_list.append(os.path.relpath(source_files.path, directory))
 
-for dirpath, dirs,files in os.walk(dest_dir):
-    for dest_files in os.scandir(dirpath):
-        if dest_files.is_file():
-          dest_list.append(os.path.relpath(dest_files.path, dest_dir))
-
-# List of folders
-
-for dirpath, dirs,files in os.walk(source_dir):
-    for source_dirs in os.scandir(dirpath):
-        if source_dirs.is_dir():
-            source_dirs_list.append(os.path.relpath(source_dirs.path, source_dir))
-
-for dirpath, dirs,files in os.walk(dest_dir):
-    for dest_dirs in os.scandir(dirpath):
-        if dest_dirs.is_dir():
-            dest_dirs_list.append(os.path.relpath(dest_dirs.path, dest_dir))
-
+create_lists(source_dir, source_list, source_dirs_list)
+create_lists(dest_dir, dest_list, dest_dirs_list)
 
 
 # DELETE OLD files/folder in history
