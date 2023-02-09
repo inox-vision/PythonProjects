@@ -3,8 +3,13 @@ import os, shutil, time, os.path
 
 source_dir = '/home/adrian/Insync/blindesign.pl@gmail.com/OneDrive/PROGRAMOWANIE/Python/UNDER DEVELOPMENT/Synchroniser/synchro_A'
 dest_dir = '/home/adrian/Insync/blindesign.pl@gmail.com/OneDrive/PROGRAMOWANIE/Python/UNDER DEVELOPMENT/Synchroniser/synchro_B'
-history_dir = dest_dir+'_history'
+
+dest_dir_head, dest_dir_tail = os.path.split(dest_dir)
+history_dir = dest_dir_head+'/.'+dest_dir_tail+'_history'
+
 days_to_backup = 14
+
+
 
 # CREATING History directory
 
