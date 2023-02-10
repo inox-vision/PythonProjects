@@ -1,4 +1,4 @@
-import os, shutil, time, os.path
+import os, shutil, time, os.path, math
 
 
 source_dir = '/home/adrian/Insync/blindesign.pl@gmail.com/OneDrive/PROGRAMOWANIE/Python/UNDER DEVELOPMENT/Synchroniser/synchro_A'
@@ -118,8 +118,8 @@ if dest_dir_available:
                 
                 source_file_path = f"{source_dir}/{os.path.relpath(files.path, dest_dir)}"
                                         
-                src_file_modif_time = os.path.getmtime(source_file_path)
-                dest_file_modif_time = os.path.getmtime(files.path)
+                src_file_modif_time = math.floor(os.path.getmtime(source_file_path))
+                dest_file_modif_time = math.floor(os.path.getmtime(files.path))
                 modif_time_difference = src_file_modif_time - dest_file_modif_time
                 
                 if modif_time_difference != 0:
