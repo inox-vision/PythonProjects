@@ -7,5 +7,6 @@ Tool for creating copy of files from source to destination folder.
 
 - Files versioning for changed files (versions kept for specified amount of time);
 - Backup for deleted files (kept for specified amount of time);
-- Files kept in history are tagged with creation time.
+- Files kept in history are tagged with creation time;
+- User can specify ignore list of directories in source directory.
 
