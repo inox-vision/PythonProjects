@@ -3,7 +3,10 @@ import os, shutil, time, os.path, math
 
 source_dir = '/home/adrian/Insync/blindesign.pl@gmail.com/OneDrive/PROGRAMOWANIE/Python/UNDER DEVELOPMENT/Synchroniser/synchro_A'
 dest_dir = '/home/adrian/Insync/blindesign.pl@gmail.com/OneDrive/PROGRAMOWANIE/Python/UNDER DEVELOPMENT/Synchroniser/synchro_B'
-use_history = False
+ignore_list = ['/home/adrian/Insync/blindesign.pl@gmail.com/OneDrive/PROGRAMOWANIE/Python/UNDER DEVELOPMENT/Synchroniser/synchro_A/SM',
+'/home/adrian/Insync/blindesign.pl@gmail.com/OneDrive/PROGRAMOWANIE/Python/UNDER DEVELOPMENT/Synchroniser/synchro_A/FoRes_EN_1_5/sound']
+
+use_history = True
 
 
 dest_dir_head, dest_dir_tail = os.path.split(dest_dir)
@@ -32,11 +35,12 @@ dest_dirs_list = []
 
 def create_lists (directory,files_list, dirs_list):
     for dirpath, dirs,files in os.walk(directory):
-        for source_files in os.scandir(dirpath):
-            if source_files.is_file():
-                files_list.append(os.path.relpath(source_files.path, directory))
-            if source_files.is_dir():
-                dirs_list.append(os.path.relpath(source_files.path, directory))
+        if not dirpath.startswith(tuple(ignore_list)):
+            for source_files in os.scandir(dirpath):
+                if source_files.is_file():
+                    files_list.append(os.path.relpath(source_files.path, directory))
+                if source_files.is_dir():
+                    dirs_list.append(os.path.relpath(source_files.path, directory))
 
 create_lists(source_dir, source_list, source_dirs_list)
 create_lists(dest_dir, dest_list, dest_dirs_list)
@@ -91,22 +95,24 @@ for dirpath, dirs, files in os.walk(dest_dir):
 
 if dest_dir_available:
     for dirpath, dirs,files in os.walk(source_dir):
-        for dirs in os.scandir(dirpath):
-            if dirs.is_dir():
-                subfolder = os.path.relpath(dirs.path, source_dir)
-                try:
-                    os.makedirs(f"{dest_dir}/{subfolder}")
-                except:
-                    pass
+        if not dirpath.startswith(tuple(ignore_list)):    
+            for dirs in os.scandir(dirpath):
+                if dirs.is_dir():
+                    subfolder = os.path.relpath(dirs.path, source_dir)
+                    try:
+                        os.makedirs(f"{dest_dir}/{subfolder}")
+                    except:
+                        pass
 
 # COPY NEW FILES
 
 if dest_dir_available:
     for dirpath,dirs,files in os.walk(source_dir):
-        for files in os.scandir(dirpath):
-            if files.is_file() and os.path.relpath(files.path, source_dir) not in dest_list:
-                shutil.copy2(files.path, f"{dest_dir}/{os.path.relpath(dirpath, source_dir)}")
-                print(os.path.relpath(files.path, source_dir)," copied")
+        if not dirpath.startswith(tuple(ignore_list)):    
+            for files in os.scandir(dirpath):
+                if files.is_file() and os.path.relpath(files.path, source_dir) not in dest_list:
+                    shutil.copy2(files.path, f"{dest_dir}/{os.path.relpath(dirpath, source_dir)}")
+                    print(os.path.relpath(files.path, source_dir)," copied")
 
 
 # COPY FILES IF CHANGED, keep version in History folder
