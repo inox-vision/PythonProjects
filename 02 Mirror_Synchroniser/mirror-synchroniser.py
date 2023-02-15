@@ -1,10 +1,12 @@
-import os, shutil, time, os.path, math
+import os, shutil, os.path
+from math import floor
+from time import strftime, localtime, time
+from sys import exit
 
 
 source_dir = '/home/adrian/Insync/blindesign.pl@gmail.com/OneDrive/PROGRAMOWANIE/Python/UNDER DEVELOPMENT/Synchroniser/synchro_A'
 dest_dir = '/home/adrian/Insync/blindesign.pl@gmail.com/OneDrive/PROGRAMOWANIE/Python/UNDER DEVELOPMENT/Synchroniser/synchro_B'
-ignore_list = ['/home/adrian/Insync/blindesign.pl@gmail.com/OneDrive/PROGRAMOWANIE/Python/UNDER DEVELOPMENT/Synchroniser/synchro_A/SM',
-'/home/adrian/Insync/blindesign.pl@gmail.com/OneDrive/PROGRAMOWANIE/Python/UNDER DEVELOPMENT/Synchroniser/synchro_A/FoRes_EN_1_5/sound']
+ignore_list = []
 
 use_history = True
 
@@ -15,16 +17,20 @@ history_dir = dest_dir_head+'/.'+dest_dir_tail+'_history'
 days_to_backup = 14
 dest_dir_available = os.path.exists(dest_dir) and os.path.exists(source_dir)
 
+if not dest_dir_available:
+    print("Check paths. Source/Destination directory or both are not available.\nProgram wil terminate")
+    exit()
+
 
 # CREATING History directory
 
-if dest_dir_available and use_history:
+if use_history:
     try:
         os.mkdir(history_dir)
     except:
         pass
 
-snapshot_time = time.strftime(f'%Y_%m_%d__%H_%M_%S', time.localtime())
+snapshot_time = strftime(f'%Y_%m_%d__%H_%M_%S', localtime())
 
 source_list =[]
 source_dirs_list = []
@@ -52,7 +58,7 @@ if use_history:
     for dirpath,dirs,files in os.walk(history_dir):
         for history_files in os.scandir(dirpath):
             if history_files.is_file():
-                actual_time = time.time()
+                actual_time = time()
                 creation_time = os.path.getctime(history_files.path)
                 time_difference = actual_time - creation_time
                 if time_difference > days_to_backup*24*60*60:
@@ -65,82 +71,77 @@ if use_history:
 
 # Backup deleted file and remove it from Destination folder  
 
-if dest_dir_available:
-    for dirpath, dirs, files in os.walk(dest_dir):
-        for dest_files in os.scandir(dirpath):
-            dest_file_path = os.path.relpath(dest_files.path, dest_dir) 
-            if dest_files.is_file():
-                if dest_file_path not in source_list:
-                    subfolder = os.path.relpath(dirpath, dest_dir)               
-                    if use_history:    
-                        try:
-                            os.makedirs(f"{history_dir}/{subfolder}")
-                        except:
-                            pass 
-                        filename, extension = os.path.splitext(dest_files.name)
-                        shutil.copy2(dest_files.path, f"{history_dir}/{subfolder}/{filename}_{snapshot_time}{extension}")
-                        print(os.path.relpath(dest_files.path, dest_dir), " moved to history and deleted")
-                    os.remove(dest_files.path)
+for dirpath, dirs, files in os.walk(dest_dir):
+    for dest_files in os.scandir(dirpath):
+        dest_file_path = os.path.relpath(dest_files.path, dest_dir) 
+        if dest_files.is_file():
+            if dest_file_path not in source_list:
+                subfolder = os.path.relpath(dirpath, dest_dir)               
+                if use_history:    
+                    try:
+                        os.makedirs(f"{history_dir}/{subfolder}")
+                    except:
+                        pass 
+                    filename, extension = os.path.splitext(dest_files.name)
+                    shutil.copy2(dest_files.path, f"{history_dir}/{subfolder}/{filename}_{snapshot_time}{extension}")
+                    print(os.path.relpath(dest_files.path, dest_dir), " moved to history and deleted")
+                os.remove(dest_files.path)
     
 # Delete directories which don't exist in source
 
-if dest_dir_available:
-    for dirpath, dirs, files in os.walk(dest_dir):
-        for dest_folders in os.scandir(dirpath):
-            if os.path.relpath(dest_folders.path, dest_dir) not in source_dirs_list:
-                if dest_folders.is_dir():
-                    shutil.rmtree(dest_folders.path)
+for dirpath, dirs, files in os.walk(dest_dir):
+    for dest_folders in os.scandir(dirpath):
+        if os.path.relpath(dest_folders.path, dest_dir) not in source_dirs_list:
+            if dest_folders.is_dir():
+                shutil.rmtree(dest_folders.path)
 
 
 # CREATE FOLDERS
 
-if dest_dir_available:
-    for dirpath, dirs,files in os.walk(source_dir):
-        if not dirpath.startswith(tuple(ignore_list)):    
-            for dirs in os.scandir(dirpath):
-                if dirs.is_dir():
-                    subfolder = os.path.relpath(dirs.path, source_dir)
-                    try:
-                        os.makedirs(f"{dest_dir}/{subfolder}")
-                    except:
-                        pass
+for dirpath, dirs,files in os.walk(source_dir):
+    if not dirpath.startswith(tuple(ignore_list)):    
+        for dirs in os.scandir(dirpath):
+            if dirs.is_dir():
+                subfolder = os.path.relpath(dirs.path, source_dir)
+                try:
+                    os.makedirs(f"{dest_dir}/{subfolder}")
+                except:
+                    pass
 
 # COPY NEW FILES
 
-if dest_dir_available:
-    for dirpath,dirs,files in os.walk(source_dir):
-        if not dirpath.startswith(tuple(ignore_list)):    
-            for files in os.scandir(dirpath):
-                if files.is_file() and os.path.relpath(files.path, source_dir) not in dest_list:
-                    shutil.copy2(files.path, f"{dest_dir}/{os.path.relpath(dirpath, source_dir)}")
-                    print(os.path.relpath(files.path, source_dir)," copied")
+for dirpath,dirs,files in os.walk(source_dir):
+    if not dirpath.startswith(tuple(ignore_list)):    
+        for files in os.scandir(dirpath):
+            if files.is_file() and os.path.relpath(files.path, source_dir) not in dest_list:
+                shutil.copy2(files.path, f"{dest_dir}/{os.path.relpath(dirpath, source_dir)}")
+                print(os.path.relpath(files.path, source_dir)," copied")
 
 
 # COPY FILES IF CHANGED, keep version in History folder
 
-if dest_dir_available:
-    for dirpath, dirs, files in os.walk(dest_dir):
-        for files in os.scandir(dirpath):
-            if files.is_file():
-                
-                source_file_path = f"{source_dir}/{os.path.relpath(files.path, dest_dir)}"
-                                        
-                src_file_modif_time = math.floor(os.path.getmtime(source_file_path))
-                dest_file_modif_time = math.floor(os.path.getmtime(files.path))
-                modif_time_difference = src_file_modif_time - dest_file_modif_time
-                
-                if modif_time_difference != 0:
-                    subfolder = os.path.relpath(dirpath, dest_dir)
-                    if use_history:
-                        try:
-                            os.makedirs(f"{history_dir}/{subfolder}")
-                        except:
-                            pass
-                        
-                        filename, extension = os.path.splitext(files.name)
-                        shutil.copy2(files.path, f"{history_dir}/{subfolder}/{filename}_{snapshot_time}{extension}")
-                    shutil.copy2(source_file_path, files.path)
-                    print(os.path.relpath(source_file_path, source_dir) , " copied")
+for dirpath, dirs, files in os.walk(dest_dir):
+    for files in os.scandir(dirpath):
+        if files.is_file():
+            
+            source_file_path = f"{source_dir}/{os.path.relpath(files.path, dest_dir)}"
+                                    
+            src_file_modif_time = floor(os.path.getmtime(source_file_path))
+            dest_file_modif_time = floor(os.path.getmtime(files.path))
+            modif_time_difference = src_file_modif_time - dest_file_modif_time
+            
+            if modif_time_difference != 0:
+                subfolder = os.path.relpath(dirpath, dest_dir)
+                if use_history:
+                    try:
+                        os.makedirs(f"{history_dir}/{subfolder}")
+                    except:
+                        pass
+                    
+                    filename, extension = os.path.splitext(files.name)
+                    shutil.copy2(files.path, f"{history_dir}/{subfolder}/{filename}_{snapshot_time}{extension}")
+                shutil.copy2(source_file_path, files.path)
+                print(os.path.relpath(source_file_path, source_dir) , " copied")
 
 
 
