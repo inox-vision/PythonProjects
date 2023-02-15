@@ -13,7 +13,7 @@ dest_dir_head, dest_dir_tail = os.path.split(dest_dir)
 history_dir = dest_dir_head+'/.'+dest_dir_tail+'_history'
 
 days_to_backup = 14
-dest_dir_available = os.path.exists(dest_dir)
+dest_dir_available = os.path.exists(dest_dir) and os.path.exists(source_dir)
 
 
 # CREATING History directory
@@ -84,11 +84,12 @@ if dest_dir_available:
     
 # Delete directories which don't exist in source
 
-for dirpath, dirs, files in os.walk(dest_dir):
-    for dest_folders in os.scandir(dirpath):
-        if os.path.relpath(dest_folders.path, dest_dir) not in source_dirs_list:
-            if dest_folders.is_dir():
-                shutil.rmtree(dest_folders.path)
+if dest_dir_available:
+    for dirpath, dirs, files in os.walk(dest_dir):
+        for dest_folders in os.scandir(dirpath):
+            if os.path.relpath(dest_folders.path, dest_dir) not in source_dirs_list:
+                if dest_folders.is_dir():
+                    shutil.rmtree(dest_folders.path)
 
 
 # CREATE FOLDERS
