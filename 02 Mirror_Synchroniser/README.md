@@ -3,6 +3,8 @@
 
 Tool for creating copy of files from source to destination folder.
 
+At this moment works only with Linux filesystems.
+
 #### Features:
 
 - Files versioning for changed files (versions kept for specified amount of time);
