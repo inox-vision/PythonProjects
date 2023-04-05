@@ -1,9 +1,7 @@
 import os
 import shutil
 import os.path
-from math import floor
 from time import strftime, localtime, time
-from sys import exit
 
 class Synchroniser:
 
@@ -45,8 +43,8 @@ class MirrorSynchroniser (Synchroniser):
         
     def create_source_lists (self):
         for dirpath, dirs,files in os.walk(self.source_dir):
-            if not dirpath.startswith(tuple(self.ignore_list)):
-                for source_files in os.scandir(dirpath):
+            for source_files in os.scandir(dirpath):
+                if not source_files.path.startswith(tuple(self.ignore_list)):
                     if source_files.is_file():
                         Synchroniser.source_files_list.append(os.path.relpath(source_files.path, self.source_dir))
                     if source_files.is_dir():
@@ -55,8 +53,8 @@ class MirrorSynchroniser (Synchroniser):
 
     def create_destination_lists (self):
         for dirpath, dirs,files in os.walk(self.dest_dir):
-            if not dirpath.startswith(tuple(self.ignore_list)):
-                for dest_files in os.scandir(dirpath):
+            for dest_files in os.scandir(dirpath):
+                if not dest_files.path.startswith(tuple(self.ignore_list)):
                     if dest_files.is_file():
                         Synchroniser.dest_files_list.append(os.path.relpath(dest_files.path, self.dest_dir))
                     if dest_files.is_dir():
@@ -107,8 +105,8 @@ class MirrorSynchroniser (Synchroniser):
 
     def create_folders(self):
         for dirpath, dir,files in os.walk(self.source_dir):
-            if not dirpath.startswith(tuple(self.ignore_list)):    
-                for dirs in os.scandir(dirpath):
+            for dirs in os.scandir(dirpath):
+                if not dirs.path.startswith(tuple(self.ignore_list)):
                     if dirs.is_dir():
                         subfolder = os.path.relpath(dirs.path, self.source_dir)
                         try:
@@ -119,8 +117,8 @@ class MirrorSynchroniser (Synchroniser):
 
     def copy_files (self):
         for dirpath,dirs,file in os.walk(self.source_dir):
-            if not dirpath.startswith(tuple(self.ignore_list)):    
-                for files in os.scandir(dirpath):
+            for files in os.scandir(dirpath):
+                if not files.path.startswith(tuple(self.ignore_list)):
                     if files.is_file() and os.path.relpath(files.path, self.source_dir) not in Synchroniser.dest_files_list:
                         shutil.copy2(files.path, f"{self.dest_dir}/{os.path.relpath(dirpath, self.source_dir)}")
                         Synchroniser.copied_files += 1
@@ -132,8 +130,8 @@ class MirrorSynchroniser (Synchroniser):
                     
                     source_file_path = f"{self.source_dir}/{os.path.relpath(files.path, self.dest_dir)}"
                                             
-                    src_file_modif_time = floor(os.path.getmtime(source_file_path))
-                    dest_file_modif_time = floor(os.path.getmtime(files.path))
+                    src_file_modif_time = os.path.getmtime(source_file_path)
+                    dest_file_modif_time = os.path.getmtime(files.path)
                     modif_time_difference = src_file_modif_time - dest_file_modif_time
                     
                     if modif_time_difference > 0:
@@ -153,25 +151,25 @@ class MirrorSynchroniser (Synchroniser):
 
     def synchronise(self):
 
-        if not self.dest_dir_available:
-            print("Check paths. Source/Destination directory or both are not available.\nProgram wil terminate")
-            exit()
-
-        if self.use_history:
-            self.make_history_dir()
+        if self.dest_dir_available:
+            if self.use_history:
+                self.make_history_dir()
+            
+            self.create_source_lists()
+            self.create_destination_lists()
         
-        self.create_source_lists()
-        self.create_destination_lists()
-       
-        if self.use_history:
-            self.clean_history()
-        
-        self.clean_destination() 
-        self.create_folders()    
-        self.copy_files()
+            if self.use_history:
+                self.clean_history()
+            
+            self.clean_destination() 
+            self.create_folders()    
+            self.copy_files()
 
-        total_operations = Synchroniser.backed_up_files + Synchroniser.copied_files + Synchroniser.deleted_files
-        print(f"\nSynchronisation finished with {total_operations} operations.")
-        print(f"{Synchroniser.backed_up_files} files has been backed up for {self.days_to_backup} days.")
-        print(f"{Synchroniser.deleted_files} files has been deleted in destination folder.")
-        print(f"{Synchroniser.copied_files} files has been copied to destination folder.")
+            total_operations = Synchroniser.backed_up_files + Synchroniser.copied_files + Synchroniser.deleted_files
+            print(f"\nSynchronisation finished with {total_operations} operations.")
+            print(f"{Synchroniser.backed_up_files} files has been backed up for {self.days_to_backup} days.")
+            print(f"{Synchroniser.deleted_files} files has been deleted in destination folder.")
+            print(f"{Synchroniser.copied_files} files has been copied to destination folder.")
+
+        else:
+            print("Check paths. Source/Destination directory or both are not available.\nProgram has nothing to do.")
