@@ -1,0 +1,66 @@
+import math
+
+print("""\nThis is a tempo ---> speed | speed ---> tempo converter.\n
+You can use imperial or metric system units """)
+
+
+def calculation_method():
+    print("\nFor speed --> tempo, type: 1\nFor tempo --> speed, type: 2")
+    while True:
+        calc_method = int(input())
+        if calc_method != 1 and calc_method != 2:
+            print("Only \"1\" or \"2\" are accepted!")
+        else:
+            return calc_method
+
+
+def unit_system():
+    print("\nWhat is your distance unit? (mi / km)")
+    while True:
+        system = input()
+        if system != "mi" and system != "km":
+            print("Choose \"mi\" or \"km\" only.")
+            continue
+        else:
+            return system
+
+
+method = calculation_method()
+system = unit_system()
+
+
+def speed_to_tempo(units):
+    while True:
+        try:
+            speed = float(input(f"speed? ({units}/h)\n"))
+        except:
+            print("Unidentified value. Type in speed with '.' (dot)")
+            continue
+        else:
+            break
+
+    tempo = 60 / speed
+    mins = math.floor(tempo)
+    secconds = int((tempo - mins) * 60)
+    print(f"Tempo is {mins}:{secconds}")
+
+
+def tempo_to_speed(units):
+    while True:
+        try:
+            tempo = input(f"tempo? (mins/{units})\n")
+        except:
+            print("Weird format. Type time with ':' between minutes and secconds.")
+        else:
+            break
+    result_split = tempo.split(':')
+    mins = 60 * int(result_split[0])
+    secconds = int(result_split[1])
+    speed = 3600 / (mins+secconds)
+    print(f"Speed is {round(speed, 2)} {units}/h")
+
+
+if method == 1:
+    speed_to_tempo(system)
+else:
+    tempo_to_speed(system)
