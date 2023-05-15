@@ -2,6 +2,7 @@ from synchroniser_module import MirrorSynchroniser
 
 
 synchro_list = {
+    'name' : 'synchronisation name',
     'source_dir' : '<source_dir_here>',
     'dest_dir' : '<destination_dir_here>',
     'ignore_list' : [],
