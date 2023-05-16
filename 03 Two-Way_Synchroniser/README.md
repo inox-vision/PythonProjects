@@ -3,6 +3,8 @@
 
 Tool for creating exact copy of files and folders in two directories.
 
+# Under development - not usefull at the moment.
+
 
 #### Features:
 (at least for now)
